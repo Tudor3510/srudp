@@ -21,7 +21,10 @@ class SimpleSocket{
         struct sockaddr_in servaddr;    
 
         struct {
-
+            struct sockaddr_in destaddr;
+            uint32_t destaddrLen = 0;
+            char data[MAXLINE];
+            __int32_t datalen = 0;
 
         }toSend;
 
@@ -99,7 +102,30 @@ class SimpleSocket{
             
             memcpy(data, received.data, received.dataLen);
         }
+	
+	
+	void setDestinationAddress(char *destinationAddress, __int32_t destinationPort){
+            toSend.destaddr.sin_port = htons(destinationPort);
 
+            toSend.destaddr.sin_addr.s_addr = inet_addr(destinationAddress);
+
+            if (toSend.destaddr.sin_addr.s_addr == -1){
+                printf("Invalid destination for the simple socket\n");
+            }
+        }
+
+
+        void setDestinationMessage(char *data, int dataLength){
+            toSend.datalen = dataLength;
+
+            memcpy(toSend.data, data, dataLength);
+        }
+
+        int socketSend(){
+            if (sendto(simpleSocket, toSend.data, toSend.datalen, 0, (struct sockaddr*) &toSend.destaddr, toSend.destaddrLen) == -1)
+                return -1;
+            return 0;
+        }
 
 
 };
